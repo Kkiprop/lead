@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div style="text-align:center;margin:32px 0;">
+    {% if to_email %}
+      <div class="alert-success">Email successfully sent to <strong>{{ to_email }}</strong></div>
+      <a href="/send-gmail/" class="btn" style="margin-top:16px;">Send another</a>
+    {% elif error %}
+      <div class="alert-error">{{ error }}</div>
+      <a href="/send-gmail/" class="btn" style="margin-top:16px;">Try again</a>
+    {% endif %}
+  </div>
+{% endblock %}

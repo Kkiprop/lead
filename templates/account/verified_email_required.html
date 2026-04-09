@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="auth-layout">
+    <div class="auth-intro">
+        <h2>This page needs a verified email address.</h2>
+        <p>Before continuing, verify your primary email so the account can be trusted for login, security, and recovery actions.</p>
+        <ul class="auth-points">
+            <li>Verified email improves account security.</li>
+            <li>You can manage addresses from the email settings page.</li>
+            <li>After verifying, retry the action that brought you here.</li>
+        </ul>
+    </div>
+    <div class="form-card auth-card">
+        <div>
+            <h3>Verification required</h3>
+            <p class="auth-subtitle">Go to your account email settings to resend or manage verification.</p>
+        </div>
+        <div class="auth-actions">
+            <a href="{% url 'account_email' %}" class="btn">Manage emails</a>
+            <a href="{% url 'account_login' %}">Back to sign in</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

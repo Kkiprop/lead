@@ -1,0 +1,48 @@
+/* Extra modern styles for Django Google Auth Email */
+
+.container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 24px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px #e0e0e0;
+}
+
+nav a {
+    color: #007bff;
+    text-decoration: none;
+    margin-right: 16px;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+nav a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #e0e0e0;
+    margin: 24px 0;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.form-error {
+    color: #d9534f;
+    margin-bottom: 12px;
+}
+
+.success-message {
+    color: #28a745;
+    margin-bottom: 12px;
+}

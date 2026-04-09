@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load account %}
+
+{% block content %}
+<section class="auth-layout">
+    <div class="auth-intro">
+        <h2>Confirm ownership of the email address.</h2>
+        <p>This step verifies that the address can be trusted for sign-in, notifications, and account recovery.</p>
+        <ul class="auth-points">
+            <li>Confirmation links are tied to a specific email address.</li>
+            <li>Expired links require a fresh confirmation request.</li>
+            <li>Verified email improves security across the account.</li>
+        </ul>
+    </div>
+    <div class="form-card auth-card">
+        {% if confirmation %}
+            {% user_display confirmation.email_address.user as user_display %}
+            {% if can_confirm %}
+                <div>
+                    <h3>Confirm email address</h3>
+                    <p class="auth-subtitle">Please confirm that <strong>{{ confirmation.email_address.email }}</strong> belongs to {{ user_display }}.</p>
+                </div>
+                <form method="post" action="{% url 'account_confirm_email' confirmation.key %}" class="auth-form">
+                    {% csrf_token %}
+                    {{ redirect_field }}
+                    <div class="auth-actions">
+                        <button type="submit">Confirm email</button>
+                    </div>
+                </form>
+            {% else %}
+                <div>
+                    <h3>Unable to confirm</h3>
+                    <p class="auth-subtitle">That email address is already confirmed by a different account.</p>
+                </div>
+            {% endif %}
+        {% else %}
+            <div>
+                <h3>Invalid confirmation link</h3>
+                <p class="auth-subtitle">This confirmation link expired or is no longer valid.</p>
+            </div>
+            <div class="auth-links">
+                <a href="{% url 'account_email' %}">Request a new confirmation email</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load socialaccount static %}
+
+{% block content %}
+<section class="auth-layout">
+    <div class="auth-intro">
+        <p class="eyebrow">Leadly Access</p>
+        <h2>Create your account and head into Leadly.</h2>
+        <p>Use a simple email signup flow, or continue with Google if you prefer.</p>
+        <ul class="auth-points">
+            <li>Simple email-based signup.</li>
+            <li>Secure password validation built in.</li>
+            <li>Google remains available as an alternate path.</li>
+        </ul>
+    </div>
+    <div class="form-card auth-card">
+        <div class="auth-card-brand">
+            <img src="{% static 'img/heydo-favicon.png' %}" alt="Leadly logo" class="auth-card-brand__logo">
+            <div>
+                <p class="eyebrow">Leadly</p>
+                <h3>Create account</h3>
+            </div>
+        </div>
+        <div>
+            <p class="auth-subtitle">Fill in the form below to get started.</p>
+        </div>
+        <a href="{% provider_login_url 'google' %}" class="btn-google">
+            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
+            Continue with Google
+        </a>
+        <form method="post" action="{% url 'account_signup' %}" class="auth-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <ul class="form-errors">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% for field in form %}
+                <div class="field-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="field-help">{{ field.help_text|safe }}</p>
+                    {% endif %}
+                    {% if field.errors %}
+                        <ul class="field-errors">
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+            {% endif %}
+            <div class="auth-actions">
+                <button type="submit">Create account</button>
+            </div>
+        </form>
+        <div class="auth-links">
+            <a href="{% url 'account_login' %}">Already have an account?</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

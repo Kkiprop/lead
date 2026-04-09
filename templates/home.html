@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load socialaccount %}
+{% block content %}
+    <section class="home-panel home-hero home-panel-guest">
+        <div class="welcome-section">
+            <p class="eyebrow">Lead Generation Intelligence</p>
+            <h2>Search investors. Build a list. Email the right firms.</h2>
+            <p>Sign in to open a working dashboard where your team can search venture capital firms, review contact details, and send outreach with Gmail.</p>
+        </div>
+        <div class="user-actions">
+            <a href="{% url 'account_login' %}" class="btn">Sign in</a>
+            <a href="{% url 'account_signup' %}" class="btn btn-secondary">Create account</a>
+            <a href="https://leadly.heydo.tech/" class="btn btn-secondary">View Leadly</a>
+        </div>
+        <div class="login-center home-social">
+            <a href="{% provider_login_url 'google' %}" class="btn-google">
+                <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
+                Continue with Google
+            </a>
+        </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="auth-layout">
+    <div class="auth-intro">
+        <h2>Manage the email addresses attached to your account.</h2>
+        <p>Choose which address is primary, resend verification to unverified addresses, remove old addresses, or add a new one.</p>
+        <ul class="auth-points">
+            <li>Primary email is used for key account communication.</li>
+            <li>Verified addresses are safer for sign-in and recovery.</li>
+            <li>You can add another address before removing the current one.</li>
+        </ul>
+    </div>
+    <div class="form-card auth-card auth-stack">
+        <div>
+            <h3>Email addresses</h3>
+            <p class="auth-subtitle">Review and manage the addresses associated with this account.</p>
+        </div>
+        {% if emailaddresses %}
+            <form method="post" action="{% url 'account_email' %}" class="auth-form auth-stack">
+                {% csrf_token %}
+                <div class="email-list">
+                    {% for radio in emailaddress_radios %}
+                        {% with emailaddress=radio.emailaddress %}
+                            <label class="email-option" for="{{ radio.id }}">
+                                <input type="radio" id="{{ radio.id }}" name="email" value="{{ emailaddress.email }}" {% if radio.checked %}checked{% endif %}>
+                                <span>
+                                    <strong>{{ emailaddress.email }}</strong>
+                                    <span class="email-meta">
+                                        {% if emailaddress.verified %}
+                                            <span class="badge badge-success">Verified</span>
+                                        {% else %}
+                                            <span class="badge badge-warning">Unverified</span>
+                                        {% endif %}
+                                        {% if emailaddress.primary %}
+                                            <span class="badge badge-primary">Primary</span>
+                                        {% endif %}
+                                    </span>
+                                </span>
+                            </label>
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+                <div class="button-row">
+                    <button type="submit" name="action_primary">Make primary</button>
+                    <button type="submit" name="action_send">Re-send verification</button>
+                    <button type="submit" name="action_remove" class="btn-danger">Remove</button>
+                </div>
+            </form>
+        {% else %}
+            <div class="auth-note">No email addresses are attached to this account yet.</div>
+        {% endif %}
+
+        {% if can_add_email %}
+            <hr>
+            <div>
+                <h3>Add email address</h3>
+                <p class="auth-subtitle">Attach another address to this account.</p>
+            </div>
+            <form method="post" action="{% url 'account_email' %}" class="auth-form">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <ul class="form-errors">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                {% for field in form %}
+                    <div class="field-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <p class="field-help">{{ field.help_text|safe }}</p>
+                        {% endif %}
+                        {% if field.errors %}
+                            <ul class="field-errors">
+                                {% for error in field.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <div class="auth-actions">
+                    <button type="submit" name="action_add">Add email</button>
+                </div>
+            </form>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

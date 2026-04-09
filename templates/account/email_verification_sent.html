@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="auth-layout">
+    <div class="auth-intro">
+        <h2>Verify your email to finish setup.</h2>
+        <p>Your account is almost ready. Open the verification message we sent and confirm the address to continue.</p>
+        <ul class="auth-points">
+            <li>Email verification protects account ownership.</li>
+            <li>Only verified addresses should be used for account recovery.</li>
+            <li>You can revisit the sign-in flow after verification.</li>
+        </ul>
+    </div>
+    <div class="form-card auth-card">
+        <div>
+            <h3>Verification sent</h3>
+            <p class="auth-subtitle">Check your inbox for the confirmation link.</p>
+        </div>
+        <div class="auth-note">
+            If you do not see the message, check spam or request a new verification email from your account settings.
+        </div>
+        <div class="auth-links">
+            <a href="{% url 'account_login' %}">Go to sign in</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

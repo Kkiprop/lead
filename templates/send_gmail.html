@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>Send Email via Gmail API</h2>
+  {% if email_sent_to %}
+    <div class="alert-success">Email sent to <strong>{{ email_sent_to }}</strong></div>
+  {% endif %}
+  {% if error %}
+    <div class="alert-error">
+      {{ error }}
+      {% if 'sign in' in error or 'token' in error %}
+        <br><a href="/accounts/google/login/?next=/send-gmail/">Re-authenticate with Google</a>
+      {% endif %}
+    </div>
+  {% endif %}
+  {% if debug_info %}
+    <pre class="debug-box">{{ debug_info }}</pre>
+  {% endif %}
+  <div class="form-card">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Send with Gmail API</button>
+    </form>
+  </div>
+  {% if back_to %}
+    <p><a href="{{ back_to }}" class="btn btn-secondary">Back to dashboard</a></p>
+  {% endif %}
+{% endblock %}

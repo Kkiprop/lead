@@ -1,0 +1,425 @@
+{% extends 'base.html' %}
+{% load socialaccount %}
+{% block content %}
+    <section class="dashboard-shell">
+        <div class="dashboard-hero">
+            <div class="dashboard-hero__content">
+                <p class="eyebrow">Investor Dashboard</p>
+                <h1>Search firms, qualify contacts, and launch outreach from one place.</h1>
+                <p class="dashboard-copy">Use a natural search like "venture capital firms in Nairobi" to load matching investors and then email any or all selected contacts.</p>
+                <div class="dashboard-hero__actions">
+                    <a href="#search-panel" class="btn">Start a search</a>
+                    <a href="{% url 'send_gmail_api_email' %}" class="btn btn-secondary" data-open-compose {% if not selected_contacts %}aria-disabled="true"{% endif %}>Compose outreach</a>
+                </div>
+            </div>
+            <div class="dashboard-meta">
+                <div class="metric-card">
+                    <span class="metric-card__label">Visible firms</span>
+                    <strong data-result-count>{{ result_count }}</strong>
+                    <span class="metric-card__meta">Visible in current search</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-card__label">Signed in as</span>
+                    <strong>{{ user.email|default:user.username }}</strong>
+                    <span class="metric-card__meta">Ready for Gmail outreach</span>
+                </div>
+                <div class="metric-card metric-card-accent">
+                    <span class="metric-card__label">Selected contacts</span>
+                    <strong data-selected-count>{{ selected_count }}</strong>
+                    <span class="metric-card__meta">Prepared for outreach</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <section class="dashboard-panel dashboard-panel-search" id="search-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">Search</p>
+                        <h2>Find venture investors</h2>
+                    </div>
+                    <span class="badge badge-primary">Demo lead dataset</span>
+                </div>
+                <form method="get" class="dashboard-search-form">
+                    <div class="search-input-group">
+                        <label for="id_query">Search query</label>
+                        {{ search_form.query }}
+                    </div>
+                    <div class="button-row dashboard-search-actions">
+                        <button type="submit" data-search-submit>Run search</button>
+                        {% if query %}
+                            <a href="{% url 'dashboard' %}" class="btn btn-secondary" data-search-clear>Clear</a>
+                        {% endif %}
+                    </div>
+                </form>
+                <p class="dashboard-ajax-status" data-search-status aria-live="polite"></p>
+                <p class="dashboard-hint">Matches are ranked across location, sector focus, stage, and keywords.</p>
+                <div class="search-presets">
+                    <span class="search-presets__label">Suggested searches</span>
+                    <a href="{% url 'dashboard' %}?query=venture+capital+firms+in+Nairobi" class="dashboard-chip" data-search-preset>Venture capital firms in Nairobi</a>
+                    <a href="{% url 'dashboard' %}?query=climate+investors+in+East+Africa" class="dashboard-chip" data-search-preset>Climate investors in East Africa</a>
+                    <a href="{% url 'dashboard' %}?query=seed+fintech+investors" class="dashboard-chip" data-search-preset>Seed fintech investors</a>
+                </div>
+            </section>
+
+            <section class="dashboard-panel dashboard-panel-email dashboard-briefing">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">Outreach</p>
+                        <h2>Action center</h2>
+                    </div>
+                    {% if has_google_gmail %}
+                        <span class="badge badge-success">Gmail connected</span>
+                    {% else %}
+                        <span class="badge badge-warning">Google sign-in required</span>
+                    {% endif %}
+                </div>
+
+                {% if not has_google_gmail %}
+                    <div class="auth-note">
+                        <p>{{ gmail_status_message }}</p>
+                        <a href="{% provider_login_url 'google' process='connect' next='/dashboard/' %}" class="btn btn-secondary">Connect Google for Gmail</a>
+                    </div>
+                {% else %}
+                    <div class="briefing-card">
+                        <div>
+                            <h3>Ready to send</h3>
+                            <p data-briefing-copy>{% if selected_contacts %}{{ selected_count }} contact{{ selected_count|pluralize }} selected for outreach.{% else %}Select firms from the results table to start an outreach draft.{% endif %}</p>
+                        </div>
+                        <div class="briefing-card__actions">
+                            <a href="{% url 'send_gmail_api_email' %}" class="btn" data-open-compose {% if not selected_contacts %}aria-disabled="true"{% endif %}>Open composer</a>
+                            <a href="/send-gmail/" class="btn btn-secondary">Single-recipient tool</a>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="selection-summary">
+                    <div class="selection-summary__header">
+                        <h3>Current selection</h3>
+                        <span class="selection-count" data-selection-badge>{{ selected_count }} selected</span>
+                    </div>
+                    {% if selected_contacts %}
+                        <ul class="selection-list" data-selection-list>
+                            {% for lead in selected_contacts %}
+                                <li>
+                                    <strong>{{ lead.firm_name }}</strong>
+                                    <span>{{ lead.contact_name }} · {{ lead.contact_email }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="dashboard-hint" data-selection-empty>Pick one or more rows from the table, then open the composer.</p>
+                        <ul class="selection-list is-hidden" data-selection-list></ul>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+
+        <div data-results-panel>
+            {% include 'partials/dashboard_results.html' %}
+        </div>
+    </section>
+
+    <div class="dashboard-modal" id="lead-modal" aria-hidden="true">
+        <div class="dashboard-modal__backdrop" data-modal-close></div>
+        <div class="dashboard-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="lead-modal-title">
+            <button type="button" class="dashboard-modal__close" data-modal-close aria-label="Close lead details modal">&times;</button>
+            <div class="dashboard-modal__header">
+                <div>
+                    <p class="eyebrow">Lead Profile</p>
+                    <h2 id="lead-modal-title">Firm details</h2>
+                </div>
+            </div>
+            <div class="dashboard-modal__body">
+                <dl class="lead-detail-list">
+                    <div>
+                        <dt>Firm</dt>
+                        <dd data-lead-field="firm">-</dd>
+                    </div>
+                    <div>
+                        <dt>Location</dt>
+                        <dd data-lead-field="location">-</dd>
+                    </div>
+                    <div>
+                        <dt>Focus</dt>
+                        <dd data-lead-field="focus">-</dd>
+                    </div>
+                    <div>
+                        <dt>Stage</dt>
+                        <dd data-lead-field="stage">-</dd>
+                    </div>
+                    <div>
+                        <dt>Primary contact</dt>
+                        <dd data-lead-field="contact">-</dd>
+                    </div>
+                    <div>
+                        <dt>Email</dt>
+                        <dd data-lead-field="email">-</dd>
+                    </div>
+                    <div>
+                        <dt>Phone</dt>
+                        <dd data-lead-field="phone">-</dd>
+                    </div>
+                    <div>
+                        <dt>Website</dt>
+                        <dd><a href="#" target="_blank" rel="noreferrer" data-lead-field="website">-</a></dd>
+                    </div>
+                </dl>
+                <div class="button-row modal-actions">
+                    <button type="button" class="btn btn-secondary" data-modal-close>Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var searchForm = document.querySelector('.dashboard-search-form');
+            var searchStatus = document.querySelector('[data-search-status]');
+            var resultsPanel = document.querySelector('[data-results-panel]');
+            var resultCountMetric = document.querySelector('[data-result-count]');
+            var selectedCountMetric = document.querySelector('[data-selected-count]');
+            var briefingCopy = document.querySelector('[data-briefing-copy]');
+            var selectionBadge = document.querySelector('[data-selection-badge]');
+            var selectionList = document.querySelector('[data-selection-list]');
+            var selectionEmpty = document.querySelector('[data-selection-empty]');
+
+            function getComposeUrl(leads) {
+                var url = new URL('{% url 'send_gmail_api_email' %}', window.location.origin);
+                var recipients = leads.map(function (lead) {
+                    return lead.email;
+                }).filter(Boolean);
+                if (recipients.length) {
+                    url.searchParams.set('recipients', recipients.join(', '));
+                }
+                url.searchParams.set('back_to', window.location.pathname + window.location.search);
+                return url.toString();
+            }
+
+            function escapeHtml(value) {
+                return String(value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            function pluralize(count, singular, plural) {
+                return count === 1 ? singular : plural;
+            }
+
+            function getSelectedLeads() {
+                return Array.from(document.querySelectorAll('[data-lead-row]')).filter(function (row) {
+                    var checkbox = row.querySelector('input[name="selected_leads"]');
+                    return checkbox && checkbox.checked;
+                }).map(function (row) {
+                    return {
+                        id: row.getAttribute('data-lead-id'),
+                        firm: row.getAttribute('data-firm'),
+                        contact: row.getAttribute('data-contact'),
+                        email: row.getAttribute('data-email')
+                    };
+                });
+            }
+
+            function renderSelectionList(target, leads) {
+                if (!target) {
+                    return;
+                }
+                if (!leads.length) {
+                    target.innerHTML = '';
+                    target.classList.add('is-hidden');
+                    return;
+                }
+                target.classList.remove('is-hidden');
+                target.innerHTML = leads.map(function (lead) {
+                    return '<li><strong>' + escapeHtml(lead.firm) + '</strong><span>' + escapeHtml(lead.contact) + ' · ' + escapeHtml(lead.email) + '</span></li>';
+                }).join('');
+            }
+
+            function setComposeEnabled(isEnabled) {
+                var composeButtons = document.querySelectorAll('[data-open-compose]');
+                composeButtons.forEach(function (button) {
+                    var selectedLeads = getSelectedLeads();
+                    button.classList.toggle('is-disabled', !isEnabled);
+                    button.setAttribute('aria-disabled', isEnabled ? 'false' : 'true');
+                    button.setAttribute('href', isEnabled ? getComposeUrl(selectedLeads) : '{% url 'send_gmail_api_email' %}');
+                });
+            }
+
+            function syncSelectedState() {
+                var leads = getSelectedLeads();
+                var selectedCount = leads.length;
+                var selectAll = document.getElementById('select-all-leads');
+                var rowCheckboxes = document.querySelectorAll('input[name="selected_leads"]');
+
+                if (selectAll) {
+                    selectAll.checked = !!rowCheckboxes.length && selectedCount === rowCheckboxes.length;
+                    selectAll.indeterminate = selectedCount > 0 && selectedCount < rowCheckboxes.length;
+                }
+
+                if (selectedCountMetric) {
+                    selectedCountMetric.textContent = selectedCount;
+                }
+                if (selectionBadge) {
+                    selectionBadge.textContent = selectedCount + ' selected';
+                }
+                if (briefingCopy) {
+                    briefingCopy.textContent = selectedCount ? selectedCount + ' ' + pluralize(selectedCount, 'contact selected', 'contacts selected') + ' for outreach.' : 'Select firms from the results table to start an outreach draft.';
+                }
+                if (selectionEmpty) {
+                    selectionEmpty.classList.toggle('is-hidden', selectedCount > 0);
+                }
+
+                renderSelectionList(selectionList, leads);
+
+                setComposeEnabled(selectedCount > 0);
+            }
+
+            function setModalVisibility(modal, isVisible) {
+                if (!modal) {
+                    return;
+                }
+                modal.classList.toggle('is-visible', isVisible);
+                modal.setAttribute('aria-hidden', isVisible ? 'false' : 'true');
+            }
+
+            function runSearch(url) {
+                if (!resultsPanel) {
+                    return;
+                }
+
+                if (searchStatus) {
+                    searchStatus.textContent = 'Searching investor directory...';
+                }
+
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }).then(function (response) {
+                    return response.json();
+                }).then(function (payload) {
+                    resultsPanel.innerHTML = payload.results_html;
+                    if (resultCountMetric) {
+                        resultCountMetric.textContent = payload.result_count;
+                    }
+                    if (searchStatus) {
+                        searchStatus.textContent = payload.result_count ? 'Search Updated' : 'No matches found for that search.';
+                    }
+                    history.replaceState({}, '', payload.query ? ('?query=' + encodeURIComponent(payload.query)) : '{% url 'dashboard' %}');
+                    syncSelectedState();
+                }).catch(function () {
+                    if (searchStatus) {
+                        searchStatus.textContent = 'Search refresh failed. Reload the page and try again.';
+                    }
+                });
+            }
+
+            if (searchForm) {
+                searchForm.addEventListener('submit', function (event) {
+                    event.preventDefault();
+                    var queryInput = searchForm.querySelector('input[name="query"]');
+                    var params = new URLSearchParams();
+                    if (queryInput && queryInput.value.trim()) {
+                        params.set('query', queryInput.value.trim());
+                    }
+                    var url = '{% url 'dashboard' %}' + (params.toString() ? ('?' + params.toString()) : '');
+                    runSearch(url);
+                });
+
+                var clearLink = searchForm.querySelector('[data-search-clear]');
+                if (clearLink) {
+                    clearLink.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        var queryInput = searchForm.querySelector('input[name="query"]');
+                        if (queryInput) {
+                            queryInput.value = '';
+                        }
+                        runSearch('{% url 'dashboard' %}');
+                    });
+                }
+            }
+
+            document.querySelectorAll('[data-search-preset]').forEach(function (preset) {
+                preset.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    var url = preset.getAttribute('href');
+                    var parsedUrl = new URL(url, window.location.origin);
+                    var query = parsedUrl.searchParams.get('query') || '';
+                    var queryInput = document.querySelector('.dashboard-search-form input[name="query"]');
+                    if (queryInput) {
+                        queryInput.value = query;
+                    }
+                    runSearch(parsedUrl.pathname + parsedUrl.search);
+                });
+            });
+
+            document.addEventListener('click', function (event) {
+                var composeTrigger = event.target.closest('[data-open-compose]');
+                if (composeTrigger && composeTrigger.getAttribute('aria-disabled') === 'true') {
+                    event.preventDefault();
+                    return;
+                }
+
+                var openTrigger = event.target.closest('[data-modal-open]');
+                if (openTrigger) {
+                    event.preventDefault();
+                    var modal = document.getElementById(openTrigger.getAttribute('data-modal-open'));
+                    if (!modal || openTrigger.disabled) {
+                        return;
+                    }
+
+                    if (modal.id === 'lead-modal') {
+                        modal.querySelector('[data-lead-field="firm"]').textContent = openTrigger.getAttribute('data-firm');
+                        modal.querySelector('[data-lead-field="location"]').textContent = openTrigger.getAttribute('data-location');
+                        modal.querySelector('[data-lead-field="focus"]').textContent = openTrigger.getAttribute('data-focus');
+                        modal.querySelector('[data-lead-field="stage"]').textContent = openTrigger.getAttribute('data-stage');
+                        modal.querySelector('[data-lead-field="contact"]').textContent = openTrigger.getAttribute('data-contact');
+                        modal.querySelector('[data-lead-field="email"]').textContent = openTrigger.getAttribute('data-email');
+                        modal.querySelector('[data-lead-field="phone"]').textContent = openTrigger.getAttribute('data-phone');
+                        var websiteField = modal.querySelector('[data-lead-field="website"]');
+                        websiteField.textContent = openTrigger.getAttribute('data-website');
+                        websiteField.href = openTrigger.getAttribute('data-website');
+                    }
+
+                    setModalVisibility(modal, true);
+                    return;
+                }
+
+                var closeTrigger = event.target.closest('[data-modal-close]');
+                if (closeTrigger) {
+                    event.preventDefault();
+                    var modalToClose = closeTrigger.closest('.dashboard-modal');
+                    setModalVisibility(modalToClose, false);
+                }
+            });
+
+            document.addEventListener('change', function (event) {
+                if (event.target.matches('input[name="selected_leads"]')) {
+                    syncSelectedState();
+                    return;
+                }
+
+                if (event.target.id === 'select-all-leads') {
+                    document.querySelectorAll('input[name="selected_leads"]').forEach(function (checkbox) {
+                        checkbox.checked = event.target.checked;
+                    });
+                    syncSelectedState();
+                }
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key !== 'Escape') {
+                    return;
+                }
+                document.querySelectorAll('.dashboard-modal.is-visible').forEach(function (modal) {
+                    setModalVisibility(modal, false);
+                });
+            });
+
+            syncSelectedState();
+        }());
+    </script>
+{% endblock %}

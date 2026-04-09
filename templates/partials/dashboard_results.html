@@ -1,0 +1,116 @@
+<section class="dashboard-panel dashboard-results">
+    <div class="panel-heading">
+        <div>
+            <p class="eyebrow">Results</p>
+            <h2>Investor lead list</h2>
+        </div>
+        {% if query %}
+            <span class="results-caption">{{ result_count }} result{{ result_count|pluralize }} for "{{ query }}"</span>
+        {% else %}
+            <span class="results-caption">Run a search to load matching firms</span>
+        {% endif %}
+    </div>
+
+    {% if results %}
+        <form method="post" class="results-form" id="results-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="compose">
+            <input type="hidden" name="query" value="{{ query }}">
+            <div class="results-toolbar">
+                <div class="results-toolbar__copy">
+                    <strong>{{ result_count }} result{{ result_count|pluralize }}</strong>
+                    <span>Review details, select targets, and move them into the outreach modal.</span>
+                </div>
+                <div class="results-toolbar__actions">
+                    <button type="button" class="btn" data-open-compose {% if not selected_contacts %}disabled{% endif %}>Review selected</button>
+                    <button type="button" class="btn btn-secondary" data-modal-open="compose-modal" {% if not selected_contacts %}disabled{% endif %}>Compose outreach</button>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="select-all-leads">
+                                    <span>Select all</span>
+                                </label>
+                            </th>
+                            <th>Firm</th>
+                            <th>Location</th>
+                            <th>Focus</th>
+                            <th>Stage</th>
+                            <th>Contact</th>
+                            <th>Website</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lead in results %}
+                            <tr
+                                data-lead-row
+                                data-lead-id="{{ lead.id }}"
+                                data-firm="{{ lead.firm_name|escape }}"
+                                data-location="{{ lead.location|escape }}"
+                                data-focus="{{ lead.focus|escape }}"
+                                data-stage="{{ lead.stage|escape }}"
+                                data-contact="{{ lead.contact_name|escape }}"
+                                data-email="{{ lead.contact_email|escape }}"
+                                data-phone="{{ lead.phone|escape }}"
+                                data-website="{{ lead.website|escape }}"
+                            >
+                                <td>
+                                    <input type="checkbox" name="selected_leads" value="{{ lead.id }}" {% if lead.id in selected_ids %}checked{% endif %}>
+                                </td>
+                                <td>
+                                    <strong>{{ lead.firm_name }}</strong>
+                                </td>
+                                <td>{{ lead.location }}</td>
+                                <td>{{ lead.focus }}</td>
+                                <td>{{ lead.stage }}</td>
+                                <td>
+                                    <strong>{{ lead.contact_name }}</strong><br>
+                                    <span>{{ lead.contact_email }}</span><br>
+                                    <span>{{ lead.phone }}</span>
+                                </td>
+                                <td>
+                                    <a href="{{ lead.website }}" target="_blank" rel="noreferrer">{{ lead.website }}</a>
+                                </td>
+                                <td>
+                                    <div class="row-actions">
+                                        <button
+                                            type="button"
+                                            class="table-action"
+                                            data-modal-open="lead-modal"
+                                            data-firm="{{ lead.firm_name|escape }}"
+                                            data-location="{{ lead.location|escape }}"
+                                            data-focus="{{ lead.focus|escape }}"
+                                            data-stage="{{ lead.stage|escape }}"
+                                            data-contact="{{ lead.contact_name|escape }}"
+                                            data-email="{{ lead.contact_email|escape }}"
+                                            data-phone="{{ lead.phone|escape }}"
+                                            data-website="{{ lead.website|escape }}"
+                                        >
+                                            View details
+                                        </button>
+                                        <a href="{{ lead.website }}" target="_blank" rel="noreferrer" class="table-action table-action-link">Visit site</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    {% elif query %}
+        <div class="empty-state">
+            <h3>No investor matches found</h3>
+            <p>Try another city, sector, or investment stage. Searches work well with phrases like "fintech seed investors in Nairobi".</p>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <h3>Start with a search</h3>
+            <p>Examples: "venture capital firms in Nairobi", "climate investors in East Africa", or "seed fintech investors".</p>
+        </div>
+    {% endif %}
+</section>

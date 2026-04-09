@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="auth-layout">
+    <div class="auth-intro">
+        <p class="eyebrow">Session Control</p>
+        <h2>Sign out when you are done.</h2>
+        <p>Confirm if you want to end this session.</p>
+        <ul class="auth-points">
+            <li>Your current session ends immediately.</li>
+            <li>You can sign back in with email or Google any time.</li>
+            <li>Protected pages remain behind auth.</li>
+        </ul>
+    </div>
+    <div class="form-card auth-card">
+        <div>
+            <h3>Sign out</h3>
+            <p class="auth-subtitle">You can sign back in at any time.</p>
+        </div>
+        <form method="post" action="{% url 'account_logout' %}" class="auth-form">
+            {% csrf_token %}
+            {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+            {% endif %}
+            <div class="auth-actions">
+                <button type="submit" class="btn-danger">Sign out</button>
+                <a href="/" class="btn">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
