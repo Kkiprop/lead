@@ -10,6 +10,7 @@
                 <div class="dashboard-hero__actions">
                     <a href="#search-panel" class="btn">Start a search</a>
                     <a href="{% url 'send_gmail_api_email' %}" class="btn btn-secondary" data-open-compose {% if not selected_contacts %}aria-disabled="true"{% endif %}>Compose outreach</a>
+                    <a href="{% url 'account_logout' %}" class="btn btn-secondary">Logout</a>
                 </div>
             </div>
             <div class="dashboard-meta">
