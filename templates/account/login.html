@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load socialaccount static %}
+{% load static %}
 
 {% block content %}
 <section class="auth-layout">
@@ -24,7 +24,7 @@
         <div>
             <p class="auth-subtitle">Enter your account details below.</p>
         </div>
-        <a href="{% provider_login_url 'google' %}" class="btn-google">
+        <a href="/accounts/google/login/" class="btn-google">
             <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
             Continue with Google
         </a>

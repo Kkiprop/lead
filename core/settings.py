@@ -70,7 +70,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'core.urls'
-SITE_ID = 1
+SITE_ID = int(os.getenv('SITE_ID', '1'))
 
 TEMPLATES = [
     {

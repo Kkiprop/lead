@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="social-auth-layout">
+    <div class="social-auth-intro">
+        {% comment %} <div>
+            <p class="eyebrow">Secure Google Access</p>
+            <h2>
+                {% if process == 'connect' %}
+                    Connect Google and unlock Gmail actions.
+                {% else %}
+                    Confirm Google sign-in and enter Leadly.
+                {% endif %}
+            </h2>
+        </div> {% endcomment %}
+        {% comment %} <p>
+            {% if process == 'connect' %}
+                You are attaching your Google account so Leadly can send outreach through Gmail without leaving the dashboard.
+            {% else %}
+                This confirmation step sends you through Google and back into the investor workflow with your account, search history, and Gmail integration intact.
+            {% endif %}
+        </p> {% endcomment %}
+        <div class="social-auth-metrics">
+            {% comment %} <div class="social-auth-metric">
+                <strong>OAuth</strong>
+                <span>Protected sign-in handled by Google.</span>
+            </div> {% endcomment %}
+            <div class="social-auth-metric">
+                <strong>Gmail</strong>
+                {% comment %} <span>Required for sending outreach from Leadly.</span> {% endcomment %}
+            </div>
+            {% comment %} <div class="social-auth-metric">
+                <strong>Return</strong>
+                <span>Back to your dashboard after approval.</span>
+            </div> {% endcomment %}
+        </div>
+    </div>
+
+    <div class="form-card auth-card social-auth-card">
+        <div class="auth-card-brand">
+            <img src="{% static 'img/heydo-favicon.png' %}" alt="Leadly logo" class="auth-card-brand__logo">
+            <div>
+                <p class="eyebrow">Leadly</p>
+                <h3>
+                    {% if process == 'connect' %}
+                        Connect {{ provider.name }}
+                    {% else %}
+                        Continue with {{ provider.name }}
+                    {% endif %}
+                </h3>
+            </div>
+        </div>
+
+        <div class="social-auth-provider">
+            <span class="social-auth-provider__icon">
+                <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
+            </span>
+            <div class="social-auth-provider__meta">
+                <strong>{{ provider.name }}</strong>
+                {% comment %} <span>
+                    {% if process == 'connect' %}
+                        Adds Gmail sending support to your current Leadly account.
+                    {% else %}
+                        Uses your Google identity to sign you into Leadly.
+                    {% endif %}
+                </span> {% endcomment %}
+            </div>
+        </div>
+
+        <div class="social-auth-copy">
+            <h3>
+                {% if process == 'connect' %}
+                    One approval step left.
+                {% else %}
+                    Review and continue.
+                {% endif %}
+            </h3>
+            <p>
+                Press continue and Google will ask you to approve the requested access. Leadly only uses the permission needed for authentication and Gmail sending.
+            </p>
+        </div>
+
+        {% comment %} <ul class="social-auth-perks">
+            <li>Fast login without managing another password flow.</li>
+            <li>Gmail permissions enable outreach from the dashboard.</li>
+            <li>Your approval happens on Google's own consent screen.</li>
+        </ul> {% endcomment %}
+
+        <div class="social-auth-actions">
+            <form method="post">
+                {% csrf_token %}
+                {% if redirect_field_value %}
+                    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+                {% endif %}
+                <button type="submit">Continue to {{ provider.name }}</button>
+            </form>
+            <a href="{% url 'account_login' %}" class="btn btn-secondary">Back</a>
+        </div>
+
+        <p class="social-auth-footnote">
+            {% if process == 'connect' %}
+                This links your existing account and does not create a second Leadly profile.
+            {% else %}
+                If this email already exists, you will be signed into the matching Leadly account.
+            {% endif %}
+        </p>
+    </div>
+</section>
+{% endblock %}
