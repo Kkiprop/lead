@@ -70,7 +70,33 @@ python manage.py test
 
 ---
 
-## 5. Directory Structure
+## 5. Temporary Render Deployment
+
+This repo now includes a Render blueprint in `render.yaml` for the service URL `https://leadly-ew8k.onrender.com`.
+
+### Render setup
+1. Push this repository to GitHub.
+2. In Render, create a new Web Service from the repo or use the blueprint import flow.
+3. Confirm these environment variables are set:
+	- `DEBUG=False`
+	- `ALLOWED_HOSTS=leadly-ew8k.onrender.com`
+	- `CSRF_TRUSTED_ORIGINS=https://leadly-ew8k.onrender.com`
+	- `SECRET_KEY` set to a strong value
+	- `SOCIAL_AUTH_GOOGLE_CLIENT_ID` and `SOCIAL_AUTH_GOOGLE_SECRET`
+	- Any email backend variables you need in production
+4. Deploy.
+
+### Google OAuth update
+In Google Cloud Console, add these values for the same OAuth client used by the app:
+- Authorized JavaScript origin: `https://leadly-ew8k.onrender.com`
+- Authorized redirect URI: `https://leadly-ew8k.onrender.com/accounts/google/login/callback/`
+
+### Important note
+If you do not attach a PostgreSQL database, Render will use the default SQLite fallback. That works for a temporary deployment, but data will be lost when the instance is rebuilt or the filesystem is reset.
+
+---
+
+## 6. Directory Structure
 - `accounts/`: User management and email logic
 - `core/`: Main Django project
 - `templates/`: HTML templates (frontend)
