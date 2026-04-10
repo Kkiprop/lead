@@ -21,7 +21,7 @@ DEBUG = env_bool('DEBUG', True)
 
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost,leadly-ew8k.onrender.com,https://leadly-ew8k.onrender.com').split(',')
+    for host in os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost,leadly-ew8k.onrender.com,lead-mfiq.onrender.com,https://leadly-ew8k.onrender.com').split(',')
     if host.strip()
 ]
 CSRF_TRUSTED_ORIGINS = [
