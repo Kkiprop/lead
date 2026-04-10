@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load socialaccount %}
 {% block content %}
     <section class="home-panel home-hero home-panel-guest">
         <div class="welcome-section">
@@ -12,7 +13,7 @@
             <a href="https://leadly.heydo.tech/" class="btn btn-secondary">View Leadly</a>
         </div>
         <div class="login-center home-social">
-            <a href="/accounts/google/login/" class="btn-google">
+            <a href="{% provider_login_url 'google' %}" class="btn-google">
                 <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
                 Continue with Google
             </a>

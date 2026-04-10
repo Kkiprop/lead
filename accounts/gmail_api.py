@@ -6,6 +6,7 @@ from allauth.socialaccount.models import SocialAccount, SocialToken
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django.utils.http import url_has_allowed_host_and_scheme
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
@@ -14,6 +15,16 @@ from .forms import EmailForm
 
 class GmailIntegrationError(Exception):
     pass
+
+
+def get_safe_back_to(request, back_to_param):
+    if back_to_param and url_has_allowed_host_and_scheme(
+        back_to_param,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return back_to_param
+    return ''
 
 
 def get_gmail_service_for_user(user):
@@ -66,6 +77,8 @@ def send_gmail_api_email(request):
     subject_param = request.GET.get('subject', '').strip()
     message_param = request.GET.get('message', '').strip()
     back_to_param = request.GET.get('back_to', '').strip()
+    back_to_url = get_safe_back_to(request, back_to_param)
+    google_reauth_next = request.get_full_path()
     if recipients_param:
         initial_data['to_email'] = recipients_param.replace(';', ', ')
     if subject_param:
@@ -83,7 +96,7 @@ def send_gmail_api_email(request):
                 send_gmail_message(request.user, recipients, subject, message)
                 request.session['email_sent_to'] = ', '.join(recipients)
                 request.session.modified = True
-                return HttpResponseRedirect(request.path)
+                return HttpResponseRedirect(request.get_full_path())
             except Exception as exc:
                 debug_info = f'Exception: {exc}'
                 return render(
@@ -93,7 +106,8 @@ def send_gmail_api_email(request):
                         'form': form,
                         'error': str(exc),
                         'debug_info': debug_info,
-                        'back_to': back_to_param,
+                        'back_to': back_to_url,
+                        'google_reauth_next': google_reauth_next,
                     },
                 )
     else:
@@ -111,6 +125,7 @@ def send_gmail_api_email(request):
             'form': form,
             'email_sent_to': email_sent_to,
             'debug_info': debug_info,
-            'back_to': back_to_param,
+            'back_to': back_to_url,
+            'google_reauth_next': google_reauth_next,
         },
     )

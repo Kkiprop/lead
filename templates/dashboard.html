@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load socialaccount %}
 {% block content %}
+    {% url 'dashboard' as dashboard_url %}
     <section class="dashboard-shell">
         <div class="dashboard-hero">
             <div class="dashboard-hero__content">
@@ -79,7 +80,7 @@
                 {% if not has_google_gmail %}
                     <div class="auth-note">
                         <p>{{ gmail_status_message }}</p>
-                        <a href="{% provider_login_url 'google' process='connect' next='/dashboard/' %}" class="btn btn-secondary">Connect Google for Gmail</a>
+                        <a href="{% provider_login_url 'google' process='connect' next=dashboard_url %}" class="btn btn-secondary">Connect Google for Gmail</a>
                     </div>
                 {% else %}
                     <div class="briefing-card">

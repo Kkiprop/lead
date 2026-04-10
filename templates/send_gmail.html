@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load socialaccount %}
 {% block content %}
   <h2>Send Email via Gmail API</h2>
   {% if email_sent_to %}
@@ -8,7 +9,7 @@
     <div class="alert-error">
       {{ error }}
       {% if 'sign in' in error or 'token' in error %}
-        <br><a href="/accounts/google/login/?next=/send-gmail/">Re-authenticate with Google</a>
+        <br><a href="{% provider_login_url 'google' process='connect' next=google_reauth_next %}">Re-authenticate with Google</a>
       {% endif %}
     </div>
   {% endif %}

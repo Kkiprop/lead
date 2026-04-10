@@ -21,7 +21,7 @@ DEBUG = env_bool('DEBUG', True)
 
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost,leadly-ew8k.onrender.com').split(',')
+    for host in os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost,leadly-ew8k.onrender.com,https://leadly-ew8k.onrender.com').split(',')
     if host.strip()
 ]
 CSRF_TRUSTED_ORIGINS = [
@@ -96,7 +96,9 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # Allauth settings
-LOGIN_REDIRECT_URL = '/dashboard/'
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'home'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
 ACCOUNT_LOGIN_METHODS = {'email'}  # Users can only log in with email
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']  # Email only signup, no username
 ACCOUNT_EMAIL_VERIFICATION = os.getenv('ACCOUNT_EMAIL_VERIFICATION', 'none' if DEBUG else 'mandatory')
@@ -194,6 +196,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+# Render terminates TLS at the proxy, so Django must trust the forwarded scheme
+# to build correct absolute callback URLs for OAuth providers such as Google.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
 if not DEBUG:
     # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
     # and renames the files with unique names for each version to support long-term caching
@@ -202,7 +209,6 @@ if not DEBUG:
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 if not DEBUG:
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
